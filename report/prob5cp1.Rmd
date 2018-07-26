@@ -1,0 +1,54 @@
+---
+title: "cp5"
+output: html_document
+---
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(here)
+library(viridis)
+library(broom)
+library(modelr)
+library(plotly)
+
+knitr::opts_chunk$set(tidy = FALSE,
+                      fig.width = 6,
+                      fig.height = 5,
+                      echo = FALSE)
+
+paleta = c("#404E4D",
+           "#92DCE5",
+           "#938BA1",
+           "#2D3142",
+           "#F4743B")
+```
+
+```{r}
+dados = merge(readr::read_csv(here::here("data/speed-dating.csv")), readr::read_csv(here::here("data/speed-dating2.csv")))
+dados <- dados %>% filter(complete.cases(.))
+dados <- dados %>% mutate(diferenca_idade = age_o - age) 
+dados$diferenca_idade <- abs(dados$diferenca_idade/10)
+```
+# Likes vs Variáveis do modelo
+
+### Likes x Raça
+
+```{r}
+ggplotly(dados %>% ggplot(aes(x=like,y=race)) + geom_count())
+```
+
+### Likes x Diferença de idade
+
+```{r}
+ggplotly(dados %>% ggplot(aes(x=like,y=diferenca_idade)) + geom_count())
+```
+
+
+### O modelo
+
+```{r}
+modelo_likes = lm(like ~ int_corr + race + samerace + shar + diferenca_idade, 
+               data = dados)
+
+tidy(modelo_likes)
+```
