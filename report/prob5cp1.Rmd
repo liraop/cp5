@@ -28,6 +28,16 @@ dados = merge(readr::read_csv(here::here("data/speed-dating.csv")), readr::read_
 dados <- dados %>% filter(complete.cases(.))
 dados <- dados %>% mutate(diferenca_idade = age_o - age) 
 dados$diferenca_idade <- abs(dados$diferenca_idade/10)
+dados <- dados %>% transform(attr3_s = as.numeric(attr3_s),
+                             sinc3_s = as.numeric(sinc3_s),
+                             intel3_s = as.numeric(intel3_s),
+                             fun3_s = as.numeric(fun3_s),
+                             amb3_s = as.numeric(amb3_s),
+                             attr = as.numeric(attr),
+                             sinc = as.numeric(sinc),
+                             intel = as.numeric(intel),
+                             fun = as.numeric(fun),
+                             amb = as.numeric(amb))
 ```
 # Likes vs Variáveis do modelo
 
@@ -42,6 +52,16 @@ ggplotly(dados %>% ggplot(aes(x=like,y=int_corr)) + geom_count())
 ```
 
 Com uma análise superficial, vemos que um índice de correlação positivo, isto é, interesses mais similares, evidencia, ao menos graficamente, uma maior quantidade de `like`. 
+
+#### Likes x quanto p1acha que tem algo em comum
+
+Mudando um pouco o escopo, se o participante acha que tem interesses similares com o parceiro de encontro, isso influencia no gostar do encontro?
+
+```{r}
+ggplotly(dados %>% ggplot(aes(x=like,y=shar)) + geom_count())
+```
+
+Podemos ver que, aparentemente, existe uma densidade maior de `likes` quando os gostos similares são frequentes.
 
 ### Likes x Raça
 
@@ -61,15 +81,49 @@ ggplotly(dados %>% ggplot(aes(x=like,y=samerace)) + geom_count())
 
 ### Likes x Diferença de idade
 
+Em muitas culturas é visto com estranheza casais com uma diferença de idade grande. Como podemos ver, nos dados os likes se concentram em pouca diferença de idade, para mais ou para menos.
+
 ```{r}
 ggplotly(dados %>% ggplot(aes(x=like,y=diferenca_idade)) + geom_count())
+```
+
+### Likes x índice de Crush 
+
+Você conhece uma pessoa e já tem boas impressoes sobre ela. Esse é o índice de Crush. 
+Essa métrica é uma média criada com as variáveis que envolvem avaliação do participante p2, como `attr` e `fun`, que são notas para avaliar o quanto p1 acha p2 atratente e divertido, entre outras.
+
+```{r}
+dados <- dados %>% mutate(crush = (dados$amb + dados$fun + dados$attr + dados$intel + dados$sinc)/5)
+
+ggplotly(dados %>% ggplot(aes(x=like,y=crush)) + geom_count())
+```
+
+### Likes x índice de auto_estima
+
+Por fim, mas não menos importante, temos aqui o índice de auto estima. Será que isto afeta o quanto o cidadão gostou de participar do encontro?
+Essa métrica é uma média criada com as variáveis que envolvem auto avaliação, como `attr3_s` e `fun3_s`, que são notas para avaliar o quanto p1 se acha atratente e divertido, entre outras.
+
+```{r}
+dados <- dados %>% mutate(auto_estima = (dados$amb3_s + dados$fun3_s + dados$attr3_s + dados$intel3_s + dados$sinc3_s)/5)
+
+ggplotly(dados %>% ggplot(aes(x=like,y=auto_estima)) + geom_count())
 ```
 
 ## O modelo
 
 ```{r}
-modelo_likes = lm(like ~ int_corr + race + samerace + shar + diferenca_idade, 
+modelo_likes = lm(like ~ int_corr + samerace + race + shar + diferenca_idade + crush + auto_estima, 
                data = dados)
 
 tidy(modelo_likes, conf.int=TRUE)
 ```
+
+Analisando os dados do modelo podemos chegar a algumas conclusões sobre o papel de cada variável independente no resultado final, isto é, o que importa na avaliação de um encontro. 
+
+Olhando os intervalos de confiança para cada variável, já podemos excluir da análise variáveis que tem valores que cruzam o 0. Isto quer dizer que o valor estimado da mesma não é confiável, não é interessante para nossa análise, visto que pode ter valor igual a 0.Desta forma, sobre `samerace`,`int_corr`,`diferenca_idade` podemos concluir que elas não possuem valor que explica `likes`. Não podemos afirmar que essas variáveis expliquem nossa variável dependente.
+
+Para `crush`, `auto_estima`, `race` e `shar` podem ser feitas análises mais adequadas. 
+- `crush`, como esperado, explica bem o valor de `like` em cerca de 73%. O que não é algo inesperado. Visto que, se um encontro é positivo, implica que provavelmente você achou a outra pessoa interessante. 
+- `auto_estima` possui valor negativo. Segundo o modelo, esta variável expicaria `like` em 10% porém, como é uma estimativa negativa, isso implicaria em quanto maior a auto estima, provavelmente o cidadão gostaria menos de um encontro.
+- `share`, que é uma avaliação do quanto p1 compartilha de interesses/hobbies com p2, explica cerca de 27% dos `likes`. Podemos concluir que achar que o outro tem interesses similares ao nosso é interessante para novos encontros. Isso, inclusive, reforça que o conceito de 'cara-metade' vem caindo por terra com o passar do tempo. Cada vez mais ficamos mais narcisísticos, de certa forma, e gostamos de pessoas que gostam de coisas similares.
+- `race` explica em 7% a variável dependente, o que é bem pouco. Contudo, ao comparar `race` com `samerace`, vemos que exite sim influência da questão racial. 
