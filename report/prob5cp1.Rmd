@@ -31,10 +31,32 @@ dados$diferenca_idade <- abs(dados$diferenca_idade/10)
 ```
 # Likes vs Variáveis do modelo
 
+Queremos ver o quanto o gostar do encontro, isto é a variável dependente `like`, pode ser explicada pelas variáveis independentes que foram preenchidas no formulário. Nos gráficos abaixo podemos ver a interação da variável escolhida e o gostar do encontro, junto de alguma justificativa para escolha da variável.
+
+### Likes x índice de correlaçao de atividade
+
+Algumas dessas variáveis são atividades como `yoga`,`hiking`, entre outras, são resumidas em outra variável, a `int_corr`, que seria o índice de correlação entre os interesses dos participantes do dating. Desta forma, é plausível já utilizar esse índice no cálculo do modelo. 
+
+```{r}
+ggplotly(dados %>% ggplot(aes(x=like,y=int_corr)) + geom_count())
+```
+
+Com uma análise superficial, vemos que um índice de correlação positivo, isto é, interesses mais similares, evidencia, ao menos graficamente, uma maior quantidade de `like`. 
+
 ### Likes x Raça
+
+Em vários locais do mundo o racismo é um problema latente. Os dados foram obtidos nos Estados Unidos, onde recentemente os conflitos raciais foram mais uma vez incendiados. Será que a raça do parceiro no dating influencia em gostar ou não do encontro?
 
 ```{r}
 ggplotly(dados %>% ggplot(aes(x=like,y=race)) + geom_count())
+```
+
+#### E se for da mesma raça?
+
+Se os participantes são da mesma raça, curiosamente, a quantidade de likes é levemente maior quando existe diferença de raça.  
+
+```{r}
+ggplotly(dados %>% ggplot(aes(x=like,y=samerace)) + geom_count())
 ```
 
 ### Likes x Diferença de idade
@@ -43,12 +65,11 @@ ggplotly(dados %>% ggplot(aes(x=like,y=race)) + geom_count())
 ggplotly(dados %>% ggplot(aes(x=like,y=diferenca_idade)) + geom_count())
 ```
 
-
-### O modelo
+## O modelo
 
 ```{r}
 modelo_likes = lm(like ~ int_corr + race + samerace + shar + diferenca_idade, 
                data = dados)
 
-tidy(modelo_likes)
+tidy(modelo_likes, conf.int=TRUE)
 ```
