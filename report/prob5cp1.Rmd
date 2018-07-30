@@ -120,10 +120,16 @@ tidy(modelo_likes, conf.int=TRUE)
 
 Analisando os dados do modelo podemos chegar a algumas conclusões sobre o papel de cada variável independente no resultado final, isto é, o que importa na avaliação de um encontro. 
 
-Olhando os intervalos de confiança para cada variável, já podemos excluir da análise variáveis que tem valores que cruzam o 0. Isto quer dizer que o valor estimado da mesma não é confiável, não é interessante para nossa análise, visto que pode ter valor igual a 0.Desta forma, sobre `samerace`,`int_corr`,`diferenca_idade` podemos concluir que elas não possuem valor que explica `likes`. Não podemos afirmar que essas variáveis expliquem nossa variável dependente.
+Olhando os intervalos de confiança para cada variável, já podemos excluir da análise variáveis que tem valores que cruzam o 0. Isto quer dizer que o valor estimado da mesma não pode ser levado em consideração na análise, pois as mesmas podem estar na região do 0. Desta forma, sobre `samerace`,`int_corr`,`diferenca_idade` não podemos concluir nada, não podemos afirmar que essas variáveis expliquem nossa variável dependente.
 
 Para `crush`, `auto_estima`, `race` e `shar` podem ser feitas análises mais adequadas. 
 - `crush`, como esperado, explica bem o valor de `like` em cerca de 73%. O que não é algo inesperado. Visto que, se um encontro é positivo, implica que provavelmente você achou a outra pessoa interessante. 
 - `auto_estima` possui valor negativo. Segundo o modelo, esta variável expicaria `like` em 10% porém, como é uma estimativa negativa, isso implicaria em quanto maior a auto estima, provavelmente o cidadão gostaria menos de um encontro.
 - `share`, que é uma avaliação do quanto p1 compartilha de interesses/hobbies com p2, explica cerca de 27% dos `likes`. Podemos concluir que achar que o outro tem interesses similares ao nosso é interessante para novos encontros. Isso, inclusive, reforça que o conceito de 'cara-metade' vem caindo por terra com o passar do tempo. Cada vez mais ficamos mais narcisísticos, de certa forma, e gostamos de pessoas que gostam de coisas similares.
 - `race` explica em 7% a variável dependente, o que é bem pouco. Contudo, ao comparar `race` com `samerace`, vemos que exite sim influência da questão racial. 
+
+Quanto ao ajuste do modelo, podemos ver abaixo que o valor de R2, 0.6222953, indica que o modelo escolhido explica em ao menos em 62% a variével independente. Como o P-Valor é igual a 0, temos uma evidência muito forte contra a hipótese nula, isto é, temos forte convicção que as variáveis escolhidas explicam em 62% o participante gostar ou não de um encontro.
+
+```{r}
+glance(modelo_likes)
+```
