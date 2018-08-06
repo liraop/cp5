@@ -44,15 +44,30 @@ dados <- dados %>% mutate(auto_estima = (dados$amb3_s + dados$fun3_s + dados$att
 dados <- dados %>% mutate(dec = ifelse(dec == "yes",1,0))
 ```
 
+Utilizando os mesmos fatores do checkpoint passado e exponenciando os valores encontrados, temos o seguinte modelo:
+
 ```{r}
-bm <- glm(dec ~ crush + auto_estima, 
+bm <- glm(dec ~ int_corr + samerace + race + shar + diferenca_idade + crush + auto_estima, 
           data = dados, 
           family = "binomial")
 
-tidy(bm, conf.int = TRUE) %>% 
-  select(-statistic, -p.value)
-# EXPONENCIANDO:
-tidy(bm, conf.int = TRUE, exponentiate = TRUE) %>% 
-  select(-statistic, -p.value)
+tidy(bm, conf.int = TRUE, exponentiate = TRUE) %>%  select(-statistic, -p.value)
 
+#summary(bm)
 ```
+
+Vemos que as variáveis são significativas em algum grau. Entretanto sua intepretação não é muito intuitiva do mesmas do jeito que está apresentado no modelo. Assim:
+
+```{r}
+exp(cbind(OR = coef(bm), confint(bm)))
+```
+
+Desta forma podemos ver que um aumento de 1 ponto no índice de `crush`, das boas impressões gerais de uma pessoa sobre outra durante o encontro, aumenta em 1.74 as chances de dar match no encontro vs não dar match. Esta é uma das variáveis com grande influência nos odds, junto com `shar`, opinião sobre interesses em comum, 1.33, `race`, a raça do participante, 1.31. 
+Observando agora `diferenca_idade`, diferença de idade entre os participantes do date, vemos que essa diferença influencia pouco as chances de o encontro dar certo.
+
+Para avaliar regressões lineares, a medida R2 é utilizada para determinar o grau de corretude do modelo gerado. Contudo, essa medida não é encontrada aqui. Para isso, utilizamos o pseudoR2:
+```{r}
+pR2(bm)
+```
+
+Desta forma vemos que o modelo com as variáveis escolhidas explica 29% da `dec`, isto é, os fatores que foram escolhidos explicam em quase 30% 
